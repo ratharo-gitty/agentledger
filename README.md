@@ -85,7 +85,7 @@ bot-closer      →  CRM QUEUED
 ## 30-Second Quickstart
 
 ```bash
-git clone https://github.com/YOUR_ORG/agentledger.git
+git clone https://github.com/ratharo-gitty/agentledger.git
 cd agentledger
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
