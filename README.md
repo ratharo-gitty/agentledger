@@ -12,7 +12,7 @@ Receipt verification. Confidence decay. Domino rollback when one bad fact poison
 pip install -e ".[dev]" && agentledger demo
 ```
 
-![AgentLedger demo — Provenance Firewall + Domino Rollback](assets/demo.svg)
+![AgentLedger Demo](assets/demo.svg)
 
 ---
 

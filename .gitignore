@@ -1,5 +1,6 @@
 __pycache__/
 *.py[cod]
+*.pyc
 *.egg-info/
 .eggs/
 dist/
@@ -12,5 +13,6 @@ venv/
 .ruff_cache/
 .mypy_cache/
 *.db
+*.db-journal
 .coverage
 htmlcov/
