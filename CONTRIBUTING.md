@@ -19,10 +19,12 @@ agentledger demo
 src/agentledger/
   models.py       # EvidenceAnchor, MemoryFact, MemoryCommit
   engine.py       # SQLite ledger + Provenance Firewall + BFS quarantine
+  api.py          # High-level ledger.get/set/watch/agent API
   cli.py          # Typer + Rich (demo / log / blame / revert / seed / mcp)
   mcp_server.py   # FastMCP tools for Cursor / Claude / LangGraph
 tests/
   test_engine.py  # Firewall, decay, cascade, MCP tools
+  test_api.py     # Ergonomic API coverage
 ```
 
 ## Rules

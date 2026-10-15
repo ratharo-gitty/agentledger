@@ -59,7 +59,7 @@ def render_code_snippet() -> Path:
     out = ASSETS / "code_snippet.svg"
     console = Console(record=True, width=85, force_terminal=True, color_system="truecolor")
 
-    code = '''from agentledger import ledger
+    code = """from agentledger import ledger
 
 # 1. Automatically hash & anchor tool output
 @ledger.watch(key="acme::budget")
@@ -70,7 +70,7 @@ def fetch_budget():
 with ledger.agent("pricer-bot"):
     budget = ledger.get("acme::budget")  # Automatically tracks read
     ledger.set("acme::quote", 75000)     # Automatically links causal lineage
-'''
+"""
     syntax = Syntax(
         code,
         "python",

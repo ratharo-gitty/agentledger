@@ -1,4 +1,4 @@
-"""Phase 1 pytest suite: artifacts, firewall rules, decay, 4-agent cascade."""
+"""Engine tests: artifacts, firewall rules, decay, 4-agent cascade."""
 
 from __future__ import annotations
 

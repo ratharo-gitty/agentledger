@@ -32,12 +32,12 @@ pip install -e ".[dev]" && agentledger demo
 
 ## Why AgentLedger?
 
-Multi-agent teams share memory. One hallucinated scrape becomes a quote, a proposal, and a CRM dispatch — **cascading memory poisoning** with no unwind button.
+Multi-agent teams share memory. One hallucinated scrape can become a quote, a proposal, and a CRM dispatch — cascading memory poisoning without a clear rollback path.
 
-AgentLedger puts a **Provenance Firewall** in front of every write and a **Causal Lineage Graph** behind every read so you can quarantine the poison root *and* every derived decision.
+AgentLedger puts a **Provenance Firewall** in front of every write and a **Causal Lineage Graph** behind every read so you can quarantine the poison root and every derived decision.
 
-| Weapon | What it does |
-|--------|----------------|
+| Mechanism | Behavior |
+|-----------|----------|
 | **Cryptographic Receipts** | Facts must cite a registered artifact SHA-256 or they never land |
 | **Confidence Half-Life Decay** | `C(t) = C0 · exp(-(ln 2 / half_life) · elapsed_hours)` |
 | **Cascading Rollback (BFS)** | Walk `causal_read_hashes` → mark the chain `QUARANTINED` |
@@ -81,18 +81,20 @@ pip install -e ".[dev]"
 agentledger demo
 ```
 
-Then drop the ergonomic API into any tool or agent hop:
+Use the high-level API in tools and agent hops:
 
 ```python
 from agentledger import ledger
+
 
 @ledger.watch(key="acme::budget")
 def scrape_budget():
     return "Verified budget: $500,000"
 
+
 with ledger.agent("bot-pricer"):
     budget = ledger.get("acme::budget")  # tracks causal read
-    ledger.set("acme::quote", 75000)     # links lineage automatically
+    ledger.set("acme::quote", 75000)  # links lineage automatically
 ```
 
 <details>
@@ -193,4 +195,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [GOOD_FIRST_ISSUES.md](GOOD_FIRST_ISS
 
 ## License
 
-[MIT](LICENSE) — build safer multi-agent systems.
+[MIT](LICENSE)

@@ -1,4 +1,4 @@
-"""Zero-boilerplate developer API: ``ledger.agent``, ``ledger.get``/``set``, ``@ledger.watch``."""
+"""High-level API: ``ledger.agent``, ``ledger.get``/``set``, ``@ledger.watch``."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ def _split_key(key: str, namespace: str) -> tuple[str, str]:
 
 
 class Ledger:
-    """Ergonomic façade over :class:`AgentLedgerEngine` with causal context tracking."""
+    """Facade over :class:`AgentLedgerEngine` with causal context tracking."""
 
     def __init__(self) -> None:
         self._engine: AgentLedgerEngine | None = None
@@ -187,7 +187,7 @@ class Ledger:
         return engine.revert_cascade(resolved)
 
     def blame(self, key: str, namespace: str = "default") -> dict[str, Any] | None:
-        """Convenience blame for a bare or ``namespace::entity`` key."""
+        """Blame for a bare or ``namespace::entity`` key."""
         ns, entity = _split_key(key, namespace)
         return self.engine.blame(f"{ns}::{entity}")
 

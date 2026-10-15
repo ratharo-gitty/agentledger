@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for AgentLedger Phase 1."""
+"""Pydantic v2 schemas for AgentLedger."""
 
 from __future__ import annotations
 

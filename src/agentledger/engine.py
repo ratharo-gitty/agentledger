@@ -315,9 +315,7 @@ class AgentLedgerEngine:
                     memory_commit.agent_id,
                     memory_commit.timestamp,
                     json.dumps(memory_commit.causal_read_hashes),
-                    json.dumps(
-                        [f.model_dump(mode="json") for f in memory_commit.facts]
-                    ),
+                    json.dumps([f.model_dump(mode="json") for f in memory_commit.facts]),
                     memory_commit.status,
                 ),
             )
@@ -347,9 +345,7 @@ class AgentLedgerEngine:
         if "::" in entity_key:
             hit = active.get(entity_key)
         else:
-            candidates = [
-                item for item in active.values() if item[0].entity_key == entity_key
-            ]
+            candidates = [item for item in active.values() if item[0].entity_key == entity_key]
             hit = max(candidates, key=lambda x: x[1].timestamp) if candidates else None
         if hit is None:
             return None

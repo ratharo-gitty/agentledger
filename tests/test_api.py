@@ -1,4 +1,4 @@
-"""Tests for the ergonomic ``ledger`` API (watch / agent / get / set / revert)."""
+"""Tests for the ``ledger`` API (watch / agent / get / set / revert)."""
 
 from __future__ import annotations
 

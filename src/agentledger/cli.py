@@ -1,4 +1,4 @@
-"""Typer + Rich CLI — viral terminal demo and ledger ops."""
+"""Typer + Rich CLI for demo, log, blame, revert, seed, and MCP."""
 
 from __future__ import annotations
 
@@ -164,7 +164,7 @@ def version() -> None:
 
 @app.command("demo")
 def demo() -> None:
-    """Viral 4-bot GTM demo: firewall catch + poisoned cascade rollback."""
+    """Run the 4-bot GTM demo: firewall intercept and cascading quarantine."""
     with tempfile.TemporaryDirectory(prefix="agentledger-demo-") as tmp:
         db_path = Path(tmp) / "demo.db"
         engine = AgentLedgerEngine(str(db_path))
@@ -217,7 +217,7 @@ def _run_demo(engine: AgentLedgerEngine) -> None:
         Panel(
             "[bold bright_magenta]bot-1-researcher[/bold bright_magenta] attempts to commit a "
             "[bold]hallucinated[/bold] fact with a [bold]fake receipt hash[/bold]:\n\n"
-            "  [cyan]acme_corp::cloud_spend[/cyan] = [yellow]\"$2M/yr\"[/yellow]\n"
+            '  [cyan]acme_corp::cloud_spend[/cyan] = [yellow]"$2M/yr"[/yellow]\n'
             "  receipt = [dim red]ffffffffffffffff…ffff[/dim red]  (never registered)",
             title="Hallucinated Write",
             border_style="bright_magenta",
@@ -256,9 +256,7 @@ def _run_demo(engine: AgentLedgerEngine) -> None:
                 padding=(1, 2),
             )
         )
-        console.print(
-            "[bright_green]✓[/bright_green] Hallucination never entered shared memory."
-        )
+        console.print("[bright_green]✓[/bright_green] Hallucination never entered shared memory.")
 
     # =====================================================================
     # SCENE 2 — Poisoned Cascade & Domino Rollback
@@ -274,8 +272,8 @@ def _run_demo(engine: AgentLedgerEngine) -> None:
 
     # Poisoned but *registered* artifact (passes firewall, pollutes downstream)
     poison_raw = (
-        'SCRAPE_OK acme_corp tier=Enterprise_Plus budget_signal=high '
-        'source=broken_parser_v3 (POISONED)'
+        "SCRAPE_OK acme_corp tier=Enterprise_Plus budget_signal=high "
+        "source=broken_parser_v3 (POISONED)"
     )
     poison_fact = _make_tool_fact(
         engine,
@@ -392,8 +390,7 @@ def _run_demo(engine: AgentLedgerEngine) -> None:
     # ---- Memory DAG tree ----
     console.print()
     dag = Tree(
-        "[bold bright_cyan]Active Memory DAG[/bold bright_cyan]  "
-        "[dim](causal_read_hashes)[/dim]"
+        "[bold bright_cyan]Active Memory DAG[/bold bright_cyan]  [dim](causal_read_hashes)[/dim]"
     )
     n1 = dag.add(
         f"[bright_red]●[/bright_red] [bold]{_short(c1.commit_hash)}[/bold]  "
@@ -433,8 +430,7 @@ def _run_demo(engine: AgentLedgerEngine) -> None:
     quarantined = engine.revert_cascade(c1.commit_hash)
 
     qtree = Tree(
-        f"[bold bright_red]Domino Quarantine[/bold bright_red]  "
-        f"({len(quarantined)} commits)"
+        f"[bold bright_red]Domino Quarantine[/bold bright_red]  ({len(quarantined)} commits)"
     )
     labels = {
         c1.commit_hash: "bot-1-researcher  acme_corp::tier  [POISON ROOT]",
@@ -527,8 +523,7 @@ def blame_cmd(
         if hit is None:
             console.print(
                 Panel(
-                    f"No [bold]VALIDATED[/bold] active fact for "
-                    f"[cyan]{entity_key!r}[/cyan]",
+                    f"No [bold]VALIDATED[/bold] active fact for [cyan]{entity_key!r}[/cyan]",
                     title="blame",
                     border_style="yellow",
                 )
@@ -577,9 +572,7 @@ def blame_cmd(
 
 @app.command("revert")
 def revert_cmd(
-    commit_hash_prefix: str = typer.Argument(
-        ..., help="Full commit hash or unique prefix"
-    ),
+    commit_hash_prefix: str = typer.Argument(..., help="Full commit hash or unique prefix"),
     db: Path | None = typer.Option(None, "--db", help="SQLite path"),
 ) -> None:
     """BFS-quarantine a commit (by hash prefix) and all causal dependents."""
@@ -601,10 +594,7 @@ def revert_cmd(
         )
         quarantined = engine.revert_cascade(target.commit_hash)
 
-        tree = Tree(
-            f"[bold bright_red]quarantined[/bold bright_red]  "
-            f"({len(quarantined)} commits)"
-        )
+        tree = Tree(f"[bold bright_red]quarantined[/bold bright_red]  ({len(quarantined)} commits)")
         node = tree
         for i, ch in enumerate(quarantined):
             c = engine.get_commit(ch)
@@ -732,8 +722,7 @@ def seed(
         n = n.add(f"{_short(c3.commit_hash)}  bot-3-copywriter  northwind::proposal_draft")
         n.add(f"{_short(c4.commit_hash)}  bot-4-closer  northwind::crm_dispatch")
         tree.add(
-            f"{_short(c_side.commit_hash)}  bot-1-researcher  "
-            "contoso::tier  [dim]unrelated[/dim]"
+            f"{_short(c_side.commit_hash)}  bot-1-researcher  contoso::tier  [dim]unrelated[/dim]"
         )
         console.print(Panel(tree, title="agentledger seed", border_style="bright_green"))
         console.print(
