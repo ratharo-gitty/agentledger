@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import tempfile
 import time
+from datetime import UTC, datetime
 from pathlib import Path
 
 import typer
@@ -52,6 +54,76 @@ def _short(h: str, n: int = 12) -> str:
 
 def _fact_keys(commit: MemoryCommit) -> str:
     return ", ".join(f"{f.namespace}::{f.entity_key}" for f in commit.facts) or "—"
+
+
+def _format_timestamp(timestamp: float) -> str:
+    """Render the stored Unix timestamp with a stable UTC representation."""
+    utc = datetime.fromtimestamp(timestamp, tz=UTC).isoformat().replace("+00:00", "Z")
+    return f"{timestamp:.6f} ({utc})"
+
+
+def _markdown_audit(commits: list[MemoryCommit]) -> str:
+    """Render complete commit and evidence provenance as Markdown."""
+    lines = ["# AgentLedger Audit Export", ""]
+    if not commits:
+        lines.append("No commits found.")
+        return "\n".join(lines) + "\n"
+
+    lines.append(f"_Commits: {len(commits)} · Quarantined commits are marked explicitly._")
+    lines.append("")
+    for index, commit in enumerate(commits):
+        marker = "[QUARANTINED]" if commit.status == "QUARANTINED" else "[VALIDATED]"
+        lines.extend(
+            [
+                f"## Commit `{commit.commit_hash}` {marker}",
+                "",
+                f"> **Status:** `{commit.status}`",
+            ]
+        )
+        if commit.status == "QUARANTINED":
+            lines.append("> **QUARANTINED:** excluded from active memory until restored.")
+        lines.extend(
+            [
+                "",
+                "| Field | Value |",
+                "| --- | --- |",
+                f"| Agent | `{commit.agent_id}` |",
+                f"| Timestamp | `{_format_timestamp(commit.timestamp)}` |",
+                f"| Branch | `{commit.branch}` |",
+                f"| Parent commit | `{commit.parent_hash or '—'}` |",
+                f"| Causal parents | {_markdown_hash_list(commit.causal_read_hashes)} |",
+                "",
+                "### Fact payload",
+                "",
+            ]
+        )
+        if not commit.facts:
+            lines.append("No facts.")
+        for fact_index, fact in enumerate(commit.facts):
+            evidence = fact.evidence
+            lines.extend(
+                [
+                    f"#### `{fact.namespace}::{fact.entity_key}`",
+                    "",
+                    "```json",
+                    json.dumps(fact.model_dump(mode="json"), indent=2, sort_keys=True),
+                    "```",
+                    "",
+                    f"- **Evidence SHA-256:** `{evidence.raw_artifact_sha256}`",
+                    f"- **Evidence source:** `{evidence.source_type.value}` — `{evidence.source_uri}`",
+                ]
+            )
+            if evidence.excerpt:
+                lines.append(f"- **Evidence excerpt:** {evidence.excerpt}")
+            if fact_index != len(commit.facts) - 1:
+                lines.append("")
+        if index != len(commits) - 1:
+            lines.extend(["", "---", ""])
+    return "\n".join(lines) + "\n"
+
+
+def _markdown_hash_list(hashes: list[str]) -> str:
+    return ", ".join(f"`{value}`" for value in hashes) if hashes else "—"
 
 
 def _decayed_for_commit(commit: MemoryCommit, now: float | None = None) -> str:
@@ -513,6 +585,37 @@ def log_cmd(
         _print_commits_table(commits, title=f"agentledger log  ·  {engine.db_path}")
     finally:
         engine.close()
+
+
+@app.command("export")
+def export_cmd(
+    db: Path | None = typer.Option(
+        None, "--db", help="SQLite path (default .agentledger/ledger.db)"
+    ),
+    output: Path | None = typer.Option(
+        None, "--output", "-o", help="Write Markdown to this file instead of stdout"
+    ),
+    all_statuses: bool = typer.Option(
+        True,
+        "--all/--validated-only",
+        help="Include QUARANTINED commits (default: all).",
+    ),
+) -> None:
+    """Export commit history, facts, and evidence receipts as Markdown."""
+    engine = _engine(db)
+    try:
+        markdown = _markdown_audit(
+            engine.list_commits(include_quarantined=all_statuses)
+        )
+    finally:
+        engine.close()
+
+    if output is None:
+        typer.echo(markdown, nl=False)
+        return
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(markdown, encoding="utf-8")
+    console.print(f"[bright_green]Exported audit Markdown[/bright_green] to {output}")
 
 
 @app.command("blame")
