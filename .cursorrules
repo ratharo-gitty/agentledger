@@ -1,0 +1,22 @@
+# AgentLedger — Cursor Rules
+
+## Stack
+- Python 3.10+ only
+- Core deps: pydantic>=2.0, typer>=0.12, rich>=13.7, mcp>=1.2.0 (MCPServer on mcp 2.x; FastMCP fallback on 1.x)
+- Dev deps: pytest>=8.0, ruff>=0.4
+- Storage: stdlib sqlite3 only (default `.agentledger/ledger.db` or `:memory:`)
+
+## Code Style
+- Strict type hints on all public functions and methods
+- Pydantic v2 exclusively: `model_dump()`, `model_dump_json()`, `model_validate()`
+- Never use deprecated Pydantic v1 APIs: `.dict()`, `.json()`, `parse_obj()`
+- Keep modules under `src/agentledger/` modular and focused
+
+## Engineering
+- Provenance Firewall must reject unsigned/invalid EvidenceAnchor receipts before write
+- Cascading rollbacks use BFS over causal fact dependencies
+- Confidence decay is applied at read time unless explicitly persisted
+- After substantive changes, run `pytest` and do not finish until it passes with 0 errors
+
+## CLI / UX
+- Prefer Rich `Panel`, `Table`, and `Tree` for high-contrast, minimalist terminal output
