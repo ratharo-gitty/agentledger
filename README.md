@@ -71,7 +71,7 @@ flowchart LR
 
 ---
 
-## Quickstart
+## 30-Second Quickstart
 
 ```bash
 git clone https://github.com/ratharo-gitty/agentledger.git
@@ -79,28 +79,24 @@ cd agentledger
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 agentledger demo
-agentledger seed
-agentledger log
 ```
 
-## 30-Second Python Integration
+Then drop the ergonomic API into any tool or agent hop:
 
 ```python
 from agentledger import ledger
 
-# 1. Automatically hash & anchor tool output
 @ledger.watch(key="acme::budget")
-def fetch_budget():
-    return "Approved budget: $500,000"
+def scrape_budget():
+    return "Verified budget: $500,000"
 
-# 2. Causal dependency tracking across agent hops
-with ledger.agent("pricer-bot"):
-    budget = ledger.get("acme::budget")  # Automatically tracks read
-    ledger.set("acme::quote", 75000)      # Automatically links causal lineage
+with ledger.agent("bot-pricer"):
+    budget = ledger.get("acme::budget")  # tracks causal read
+    ledger.set("acme::quote", 75000)     # links lineage automatically
 ```
 
 <details>
-<summary><strong>Cursor</strong> — <code>.cursor/mcp.json</code></summary>
+<summary><strong>Cursor</strong> — FastMCP <code>.cursor/mcp.json</code></summary>
 
 ```json
 {
@@ -121,7 +117,7 @@ with ledger.agent("pricer-bot"):
 </details>
 
 <details>
-<summary><strong>Claude Desktop</strong> — <code>claude_desktop_config.json</code></summary>
+<summary><strong>Claude Desktop</strong> — FastMCP <code>claude_desktop_config.json</code></summary>
 
 ```json
 {
