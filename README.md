@@ -172,9 +172,24 @@ MCP tools: `ledger_register_evidence` · `ledger_read` · `ledger_commit` · `le
 | `agentledger demo` | Self-contained 4-bot GTM simulation (firewall + domino rollback) |
 | `agentledger seed` | Sample multi-agent commits for local exploration |
 | `agentledger log` | Rich table of commits, causal parents, decayed confidence |
+| `agentledger export` | Markdown audit export with commit lineage, fact payloads, and evidence SHA-256 receipts |
 | `agentledger blame <key>` | Full provenance receipt panel |
 | `agentledger revert <hash>` | Prefix-aware BFS cascade quarantine |
 | `agentledger mcp` | Start the FastMCP stdio server |
+
+---
+
+Export the complete ledger as an audit document. The default output includes validated and quarantined commits; use `--validated-only` to omit quarantined records.
+
+```bash
+agentledger export --format md --db .agentledger/ledger.db --out AUDIT.md
+# Or print Markdown directly:
+agentledger export --format md --db .agentledger/ledger.db
+```
+
+`--out` also accepts the compatibility aliases `--output` and `-o`. The current export format is Markdown (`md`).
+
+Each commit section contains its full hash, agent, UTC timestamp, status, parent and causal read hashes, serialized fact payload, and evidence SHA-256 receipt. Quarantined commits are labeled `[QUARANTINED]` and include a quarantine callout.
 
 ---
 
