@@ -95,7 +95,15 @@ def test_export_can_write_markdown_file(tmp_path: Path) -> None:
 
     result = runner.invoke(
         app,
-        ["export", "--db", str(db_path), "--output", str(output_path)],
+        [
+            "export",
+            "--format",
+            "md",
+            "--db",
+            str(db_path),
+            "--out",
+            str(output_path),
+        ],
     )
 
     assert result.exit_code == 0, result.stdout

@@ -182,10 +182,12 @@ MCP tools: `ledger_register_evidence` · `ledger_read` · `ledger_commit` · `le
 Export the complete ledger as an audit document. The default output includes validated and quarantined commits; use `--validated-only` to omit quarantined records.
 
 ```bash
-agentledger export --db .agentledger/ledger.db --output audit.md
+agentledger export --format md --db .agentledger/ledger.db --out AUDIT.md
 # Or print Markdown directly:
-agentledger export --db .agentledger/ledger.db
+agentledger export --format md --db .agentledger/ledger.db
 ```
+
+`--out` also accepts the compatibility aliases `--output` and `-o`. The current export format is Markdown (`md`).
 
 Each commit section contains its full hash, agent, UTC timestamp, status, parent and causal read hashes, serialized fact payload, and evidence SHA-256 receipt. Quarantined commits are labeled `[QUARANTINED]` and include a quarantine callout.
 

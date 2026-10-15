@@ -593,8 +593,13 @@ def export_cmd(
         None, "--db", help="SQLite path (default .agentledger/ledger.db)"
     ),
     output: Path | None = typer.Option(
-        None, "--output", "-o", help="Write Markdown to this file instead of stdout"
+        None,
+        "--out",
+        "--output",
+        "-o",
+        help="Write Markdown to this file instead of stdout",
     ),
+    format: str = typer.Option("md", "--format", help="Export format (currently: md)"),
     all_statuses: bool = typer.Option(
         True,
         "--all/--validated-only",
@@ -602,6 +607,9 @@ def export_cmd(
     ),
 ) -> None:
     """Export commit history, facts, and evidence receipts as Markdown."""
+    if format.lower() != "md":
+        raise typer.BadParameter("only the 'md' format is supported", param_hint="--format")
+
     engine = _engine(db)
     try:
         markdown = _markdown_audit(
