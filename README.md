@@ -83,6 +83,22 @@ agentledger seed
 agentledger log
 ```
 
+## 30-Second Python Integration
+
+```python
+from agentledger import ledger
+
+# 1. Automatically hash & anchor tool output
+@ledger.watch(key="acme::budget")
+def fetch_budget():
+    return "Approved budget: $500,000"
+
+# 2. Causal dependency tracking across agent hops
+with ledger.agent("pricer-bot"):
+    budget = ledger.get("acme::budget")  # Automatically tracks read
+    ledger.set("acme::quote", 75000)      # Automatically links causal lineage
+```
+
 <details>
 <summary><strong>Cursor</strong> — <code>.cursor/mcp.json</code></summary>
 
