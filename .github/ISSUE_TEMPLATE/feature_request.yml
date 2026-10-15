@@ -1,0 +1,67 @@
+name: Feature request
+description: Propose an adapter, storage backend, or CLI/MCP enhancement
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Looking for ideas? See [GOOD_FIRST_ISSUES.md](https://github.com/ratharo-gitty/agentledger/blob/main/GOOD_FIRST_ISSUES.md).
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Adapter (LangGraph)
+        - Adapter (CrewAI)
+        - Adapter (other framework)
+        - Storage backend (Postgres / pgvector)
+        - CLI / Rich UX
+        - MCP tools
+        - Visualization / export
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What pain does this solve for multi-agent teams?
+      placeholder: CrewAI crews share scratchpad state without provenance receipts…
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: API shape, module path, or UX you have in mind.
+      placeholder: |
+        Add `agentledger.adapters.langgraph.AgentLedgerSaver` that:
+        1. Registers node I/O as artifacts
+        2. Commits with causal_read_hashes from prior reads
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      placeholder: Keep using Redis JSON + manual quarantine scripts…
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints you will respect
+      options:
+        - label: Keep core deps limited to pydantic / typer / rich / mcp (optional extras OK)
+          required: true
+        - label: Preserve Provenance Firewall semantics (no silent unverified writes)
+          required: true
+        - label: Add or update tests + docs
+          required: false

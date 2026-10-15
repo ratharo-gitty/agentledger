@@ -1,120 +1,86 @@
+<div align="center">
+
 # AgentLedger
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![MCP Compatible](https://img.shields.io/badge/MCP-compatible-brightgreen.svg)](https://modelcontextprotocol.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![CI](https://img.shields.io/badge/CI-passing-success.svg)](.github/workflows/ci.yml)
+**Git-style version control, cryptographic receipts, and cascading rollbacks for multi-agent shared memory.**
 
-**Git-style version control for multi-agent shared memory.**  
-Receipt verification. Confidence decay. Domino rollback when one bad fact poisons the team.
+[![CI](https://img.shields.io/github/actions/workflow/status/ratharo-gitty/agentledger/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/ratharo-gitty/agentledger/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue?style=flat-square)](https://www.python.org/downloads/)
+[![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-black?style=flat-square)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![Good First Issues](https://img.shields.io/badge/Good%20First%20Issues-welcome-7057ff?style=flat-square)](https://github.com/ratharo-gitty/agentledger/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+
+<br/>
+
+![AgentLedger Demo](assets/demo.svg)
+
+<sub>Terminal demo — Provenance Firewall catch + BFS domino quarantine (zero API keys)</sub>
+
+<br/>
 
 ```bash
 pip install -e ".[dev]" && agentledger demo
 ```
 
-![AgentLedger Demo](assets/demo.svg)
+</div>
 
 ---
 
-## The problem: Cascading Memory Poisoning
+## Why AgentLedger?
 
-Modern agent teams share a scratchpad. One hallucinated scrape becomes tomorrow’s quote, proposal, and CRM dispatch — **and nobody can unwind the blast radius**.
+Multi-agent teams share memory. One hallucinated scrape becomes a quote, a proposal, and a CRM dispatch — **cascading memory poisoning** with no unwind button.
 
-```
-bot-researcher  →  "Acme is Enterprise_Plus"   (poisoned scrape)
-       ↓
-bot-pricer      →  quote = $180k
-       ↓
-bot-copywriter  →  outbound proposal
-       ↓
-bot-closer      →  CRM QUEUED
-```
-
-**AgentLedger** puts a **Provenance Firewall** in front of every write and a **Causal Lineage Graph** behind every read so you can quarantine the poison root *and* every derived decision — surgically.
+AgentLedger puts a **Provenance Firewall** in front of every write and a **Causal Lineage Graph** behind every read so you can quarantine the poison root *and* every derived decision.
 
 | Weapon | What it does |
 |--------|----------------|
-| **Receipt Verification** | Facts must cite a registered artifact SHA-256 or they never land |
-| **Confidence Decay** | `C(t) = C0 · exp(-(ln 2 / half_life) · elapsed_hours)` |
-| **Domino Rollback Engine** | BFS over `causal_read_hashes` → mark the chain `QUARANTINED` |
+| **Cryptographic Receipts** | Facts must cite a registered artifact SHA-256 or they never land |
+| **Confidence Half-Life Decay** | `C(t) = C0 · exp(-(ln 2 / half_life) · elapsed_hours)` |
+| **Cascading Rollback (BFS)** | Walk `causal_read_hashes` → mark the chain `QUARANTINED` |
 
 ---
 
-## Architecture
+## Lifecycle
 
-```
-                    ┌─────────────────────────────────────┐
-   tool stdout ───▶ │  register_artifact() → SHA-256      │
-                    └─────────────────┬───────────────────┘
-                                      │ evidence receipt
-                                      ▼
-┌──────────────┐   commit(facts)   ┌──────────────────────────────────┐
-│  Agent N     │ ────────────────▶ │  PRE-COMMIT PROVENANCE FIREWALL  │
-│  (Cursor /   │                   │  ① UNVERIFIED_RECEIPT?  BLOCK    │
-│   Claude /   │                   │  ② LOW_CONFIDENCE_OVERWRITE?     │
-│   LangGraph) │                   │     BLOCK                        │
-└──────────────┘                   └─────────────────┬────────────────┘
-                                                     │ VALIDATED
-                                                     ▼
-                                       ┌─────────────────────────┐
-                                       │  SQLite Memory Ledger   │
-                                       │  commits · facts · DAG  │
-                                       └───────────┬─────────────┘
-                                                   │
-                    read_facts() ◀─────────────────┤
-                         │                         │
-                         │ causal_read_hashes      │ revert_cascade(root)
-                         ▼                         ▼
-              next agent commit          BFS Domino Quarantine
-                                         (root + dependents)
-```
-
-**Causal Lineage Graph (demo):**
-
-```
-● bot-1-researcher   acme_corp::tier=Enterprise_Plus     ← POISON ROOT
-└─● bot-2-pricer     acme_corp::quote_usd=180000
-  └─● bot-3-copywriter  acme_corp::proposal_draft
-    └─● bot-4-closer acme_corp::crm_dispatch=QUEUED
-
-● bot-1-researcher   globex::tier=Growth                 ← UNRELATED (safe)
+```mermaid
+flowchart LR
+    A[Agent Tool Output] --> B[Artifact Hasher<br/>SHA-256]
+    B --> C[Provenance Firewall]
+    C -->|VALIDATED| D[Merkle Commit]
+    D --> E[Main State DAG]
+    E --> F[Downstream Causal Reads]
+    F -.->|causal_read_hashes| D
+    C -->|UNVERIFIED_RECEIPT / LOW_CONFIDENCE| X[Blocked]
 ```
 
 ---
 
-## 30-Second Quickstart
+## Comparison
+
+| Feature | AgentLedger | Mem0 / Zep | Raw Redis / JSON |
+|---------|:-----------:|:----------:|:----------------:|
+| Cryptographic Receipts | ✅ | ❌ | ❌ |
+| Confidence Half-Life Decay | ✅ | ⚠️ partial | ❌ |
+| Cascading Rollback (BFS) | ✅ | ❌ | ❌ |
+| Model Context Protocol (MCP) | ✅ | ❌ | ❌ |
+| Embedded Zero-Cloud (SQLite) | ✅ | ❌ | ⚠️ DIY |
+
+---
+
+## Quickstart
 
 ```bash
 git clone https://github.com/ratharo-gitty/agentledger.git
 cd agentledger
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-agentledger demo          # viral 4-bot firewall + cascade demo (temp DB)
-agentledger seed          # populate .agentledger/ledger.db
+agentledger demo
+agentledger seed
 agentledger log
-agentledger blame tier
 ```
 
----
-
-## CLI
-
-| Command | Purpose |
-|---------|---------|
-| `agentledger demo` | Self-contained 4-bot GTM simulation (firewall + domino rollback) |
-| `agentledger seed` | Sample multi-agent commits for local exploration |
-| `agentledger log` | Rich table of commits, causal parents, decayed confidence |
-| `agentledger blame <key>` | Full provenance receipt panel |
-| `agentledger revert <hash>` | Prefix-aware BFS cascade quarantine |
-| `agentledger mcp` | Start the FastMCP stdio server |
-
----
-
-## MCP Server (Cursor & Claude Desktop)
-
-Tools: `ledger_register_evidence` · `ledger_read` · `ledger_commit` · `ledger_blame` · `ledger_revert_cascade`
-
-### Cursor — `.cursor/mcp.json`
+<details>
+<summary><strong>Cursor</strong> — <code>.cursor/mcp.json</code></summary>
 
 ```json
 {
@@ -130,7 +96,12 @@ Tools: `ledger_register_evidence` · `ledger_read` · `ledger_commit` · `ledger
 }
 ```
 
-### Claude Desktop — `claude_desktop_config.json`
+> After `pip install -e .`, point `command` at the absolute path to the `agentledger` binary if Cursor does not inherit your venv PATH.
+
+</details>
+
+<details>
+<summary><strong>Claude Desktop</strong> — <code>claude_desktop_config.json</code></summary>
 
 ```json
 {
@@ -146,11 +117,10 @@ Tools: `ledger_register_evidence` · `ledger_read` · `ledger_commit` · `ledger
 }
 ```
 
-> Tip: after `pip install -e .`, the `agentledger` console script is on your PATH inside the venv. Point `command` at the absolute path to that binary if the host app does not inherit your shell PATH.
+</details>
 
----
-
-## Python API
+<details>
+<summary><strong>Python SDK</strong></summary>
 
 ```python
 from agentledger import AgentLedgerEngine, MemoryFact, EvidenceAnchor, SourceType
@@ -173,6 +143,23 @@ commit = engine.commit(agent_id="researcher", facts=[fact])
 facts, causal = engine.read_facts(namespace="acme_corp")
 ```
 
+MCP tools: `ledger_register_evidence` · `ledger_read` · `ledger_commit` · `ledger_blame` · `ledger_revert_cascade`
+
+</details>
+
+---
+
+## CLI
+
+| Command | Purpose |
+|---------|---------|
+| `agentledger demo` | Self-contained 4-bot GTM simulation (firewall + domino rollback) |
+| `agentledger seed` | Sample multi-agent commits for local exploration |
+| `agentledger log` | Rich table of commits, causal parents, decayed confidence |
+| `agentledger blame <key>` | Full provenance receipt panel |
+| `agentledger revert <hash>` | Prefix-aware BFS cascade quarantine |
+| `agentledger mcp` | Start the FastMCP stdio server |
+
 ---
 
 ## Develop
@@ -190,4 +177,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [GOOD_FIRST_ISSUES.md](GOOD_FIRST_ISS
 
 ## License
 
-MIT — build safer multi-agent systems.
+[MIT](LICENSE) — build safer multi-agent systems.

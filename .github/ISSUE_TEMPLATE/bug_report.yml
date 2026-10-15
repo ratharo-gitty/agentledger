@@ -1,0 +1,95 @@
+name: Bug report
+description: Report a crash, firewall false-positive/negative, or incorrect cascade behavior
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping harden AgentLedger. Please include enough detail to reproduce locally.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong in one or two sentences?
+      placeholder: revert_cascade quarantined an unrelated commit on a different namespace…
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Minimal steps starting from a clean ledger (or `agentledger seed`).
+      placeholder: |
+        1. `pip install -e ".[dev]"`
+        2. `agentledger seed --force`
+        3. `agentledger revert <hash>`
+        4. Observe unexpected status on …
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: Only causally downstream commits should become QUARANTINED.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: Unrelated contoso::tier was also quarantined.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error logs / terminal output
+      description: Paste tracebacks, firewall messages, or `agentledger log` output.
+      render: shell
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: AgentLedger version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: python
+    attributes:
+      label: Python version
+      options:
+        - "3.10"
+        - "3.11"
+        - "3.12"
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS / environment
+      placeholder: Ubuntu 24.04, macOS 15, Windows 11 WSL2…
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I ran `pytest -v` / `agentledger demo` and can still reproduce
+          required: false
+        - label: I searched existing issues for duplicates
+          required: false
